@@ -13,7 +13,7 @@ supabase = init_supabase()
 @st.cache_data
 def get_data():
     try:
-        data = supabase.table("Precipitaciones_Piura").select("anio, pp, estacion").execute()
+        data = supabase.table("precipitaciones").select("anio, pp, estacion").execute()
         return pd.DataFrame(data.data)
     except Exception as e:
         st.error(f"Error al cargar datos: {str(e)}")
@@ -35,6 +35,6 @@ if not df.empty:
     st.line_chart(df_filtrado.groupby("anio")["pp"].mean())
 else:
     st.warning("No se pudieron cargar los datos. Verifica:")
-    st.write("- Nombre de la tabla: Precipitaciones_Piura")
+    st.write("- Nombre de la tabla: precipitaciones")
     st.write("- Columnas solicitadas: anio, pp, estacion")
     st.write("- Configuración de secrets.toml")
