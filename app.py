@@ -24,7 +24,7 @@ st.title("Análisis de Precipitaciones")
 st.write("Primeras filas de datos:", df.head())
 
 # 4. Gráfico por año (usando anio como año)
-st.line_chart(df.groupby("smlo")["pp"].mean())
+st.line_chart(df.groupby("anio")["pp"].mean())
 
 # 5. Selector de estación
 estacion = st.selectbox("Selecciona estación:", df["estacion"].unique())
