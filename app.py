@@ -1,82 +1,39 @@
 import streamlit as st
 from supabase import create_client
 import pandas as pd
-import numpy as np
-from copy import deepcopy
 
-# 1. Conexión a Supabase
+# Conexión a Supabase
 @st.cache_resource
 def init_supabase():
-    url = st.secrets.get("SUPABASE", {}).get("url")
-    key = st.secrets.get("SUPABASE", {}).get("key")
-    if not url or not key:
-        st.error("Error: No se encontraron las credenciales de Supabase.")
-        return None
+    url = st.secrets["SUPABASE"]["https://myrklpddrvlpmruwbycb.supabase.co"]
+    key = st.secrets["SUPABASE"]["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15cmtscGRkcnZscG1ydXdieWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0NzQyNDMsImV4cCI6MjA1OTA1MDI0M30.txP8kXUo1OnjBy27f1m8s5mM5Lszl0x1GgBq-x8et1w"]
     return create_client(url, key)
 
 supabase = init_supabase()
-if not supabase:
-    st.stop()
 
-# 2. Obtener datos de Supabase
+# Obtener predicciones
 @st.cache_data
-def get_data():
+def cargar_predicciones():
     try:
-        response = supabase.table("precipitaciones").select("anio, pp, estacion").execute()
-        if response.data:
-            df = pd.DataFrame(deepcopy(response.data))
-            df["anio"] = pd.to_numeric(df["anio"], errors="coerce")  # Asegurar que 'anio' es numérico
-            df["pp"] = pd.to_numeric(df["pp"], errors="coerce")      # Asegurar que 'pp' es numérico
-            df.dropna(inplace=True)  # Eliminar filas con valores nulos
-            return df
-        else:
-            st.warning("No se encontraron datos en la tabla 'precipitaciones'.")
-            return pd.DataFrame()
+        data = supabase.table("predicciones_inundaciones").select("id_punto, fecha, riesgo_inundacion").execute()
+        return pd.DataFrame(data.data)
     except Exception as e:
-        st.error(f"Error al cargar datos: {e}")
+        st.error(f"Error cargando predicciones: {e}")
         return pd.DataFrame()
 
-df = get_data()
+df = cargar_predicciones()
 
-# 3. Interfaz en Streamlit
-st.title("Análisis de Precipitaciones en Estaciones Meteorológicas")
+# Interfaz
+st.title("Predicciones de Inundaciones")
 
 if not df.empty:
-    # Mostrar información de la base de datos
-    st.success(f"Datos cargados correctamente ({len(df)} registros)")
-    st.write("🔍 **Vista previa de los datos:**")
-    st.dataframe(df.head(5))
+    st.write("Predicciones registradas:")
+    st.dataframe(df)
 
-    # Gráfico de precipitaciones promedio por año
-    st.subheader("Precipitación Promedio por Año")
-    if "pp" in df.columns and not df["pp"].isnull().all():
-        st.line_chart(df.groupby("anio")["pp"].mean())
-    else:
-        st.warning("⚠ No hay datos válidos para graficar.")
-
-    # Filtro interactivo por estación meteorológica
-    st.subheader("Filtrar por Estación")
-    estaciones_unicas = df["estacion"].dropna().unique()
-    if len(estaciones_unicas) > 0:
-        estacion_seleccionada = st.selectbox("Selecciona una estación:", sorted(estaciones_unicas))
-        datos_filtrados = df[df["estacion"] == estacion_seleccionada]
-
-        # Mostrar gráfico de la estación seleccionada
-        st.subheader(f"Precipitación en {estacion_seleccionada}")
-        if not datos_filtrados.empty:
-            st.line_chart(datos_filtrados.groupby("anio")["pp"].mean())
-            st.write(f"**Estadísticas para {estacion_seleccionada}**")
-            st.write(datos_filtrados["pp"].describe())
-        else:
-            st.warning("⚠ No hay datos para esta estación.")
-    else:
-        st.warning("⚠ No se encontraron estaciones.")
+    # Agrupar y graficar por fecha
+    st.write("Riesgo promedio de inundación por fecha:")
+    st.line_chart(df.groupby("fecha")["riesgo_inundacion"].mean())
 
 else:
-    st.warning("""
-    No se encontraron datos. Verifica que:
-    - La tabla en Supabase se llama exactamente **"precipitaciones"**.
-    - Las columnas se llaman **"anio", "pp" y "estacion"**.
-    - Las credenciales en `secrets.toml` están configuradas correctamente.
-    """)
+    st.warning("No hay predicciones registradas.")
 
