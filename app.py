@@ -15,15 +15,13 @@ supabase = init_supabase()
 @st.cache_data
 def cargar_predicciones():
     try:
-        data = supabase.table("predicciones_inundaciones").select("id_punto, fecha, riesgo_inundacion, latitud, longitud").execute()
+        data = supabase.table("predicciones_inundaciones").select("id_punto, fecha, riesgo_inundacion").execute()
         return pd.DataFrame(data.data)
     except Exception as e:
         st.error(f"Error cargando predicciones: {e}")
         return pd.DataFrame()
 
 df = cargar_predicciones()
-st.write("Vista previa del DataFrame:")
-st.write(df.head())
 
 # Interfaz
 st.title("Predicciones de Inundaciones")
