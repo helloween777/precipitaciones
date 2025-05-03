@@ -22,6 +22,16 @@ def cargar_predicciones():
         st.error(f"Error cargando predicciones: {e}")
         return pd.DataFrame()
 
+@st.cache_data
+def cargar_puntos_inundacion():
+    try:
+        data = supabase.table("puntos_inundacion").select("id_punto, latitud, longitud, descripcion").execute()
+        return pd.DataFrame(data.data)
+    except Exception as e:
+        st.error(f"Error cargando puntos de inundación: {e}")
+        return pd.DataFrame()
+puntos_df = cargar_puntos_inundacion()
+
 # Cargar y mostrar los datos
 df = cargar_predicciones()
 
@@ -38,7 +48,7 @@ if not df.empty:
     st.subheader("Resumen estadístico de los datos")
     st.write(df.describe())
 
-    # Estadísticas clave
+    # Estadísticas de Riesgo
     st.subheader("Estadísticas clave")
     riesgo_promedio = df["riesgo_inundacion"].mean()
     riesgo_maximo = df["riesgo_inundacion"].max()
