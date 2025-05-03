@@ -25,11 +25,12 @@ def cargar_predicciones():
 @st.cache_data
 def cargar_puntos_inundacion():
     try:
-        data = supabase.table("puntos_inundacion").select("id_punto, latitud, longitud, descripcion").execute()
+        data = supabase.table("puntos_inundacion").select("id_punto, latitud, longitud").execute()
         return pd.DataFrame(data.data)
     except Exception as e:
         st.error(f"Error cargando puntos de inundación: {e}")
         return pd.DataFrame()
+
 puntos_df = cargar_puntos_inundacion()
 
 # Cargar y mostrar los datos
