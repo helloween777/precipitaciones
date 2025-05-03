@@ -5,8 +5,8 @@ import pandas as pd
 # Conexión a Supabase
 @st.cache_resource
 def init_supabase():
-    url = st.secrets["https://myrklpddrvlpmruwbycb.supabase.co"]
-    key = st.secrets["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15cmtscGRkcnZscG1ydXdieWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0NzQyNDMsImV4cCI6MjA1OTA1MDI0M30.txP8kXUo1OnjBy27f1m8s5mM5Lszl0x1GgBq-x8et1w"]
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
 supabase = init_supabase()
